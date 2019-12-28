@@ -60,11 +60,6 @@ def recuper_liste_meilleur_case(case_libre, plateau):
     return lst_case
 
 
-def case_noir_ia(case_libre,plateau):
-    lst_case_libre=[]
-    lst_case_possible=[]
-    for case in case_libre:
-        lst
 
 
 def deplacement_pion(couleur, joueur_tag, joueur, plateau, ia):
