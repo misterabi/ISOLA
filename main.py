@@ -5,8 +5,9 @@ from random import randint
 def dessine_plateau(plateau, taille_case):
     lettre = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U",
               "V", "W", "X", "Y", "Z"]
-    cree_fenetre(((len(plateau[0]) + 1) * taille_case)+taille_case, ((len(plateau)) + 1) * taille_case+taille_case)
-    rectangle(0, 0, (len(plateau[0]) + 1) * taille_case+taille_case, (len(plateau) + 1) * taille_case+taille_case, remplissage="blue")
+    cree_fenetre(((len(plateau[0]) + 1) * taille_case) + taille_case, ((len(plateau)) + 1) * taille_case + taille_case)
+    rectangle(0, 0, (len(plateau[0]) + 1) * taille_case + taille_case, (len(plateau) + 1) * taille_case + taille_case,
+              remplissage="blue")
 
     for largueur_plateau in range(1, len(plateau) + 1):
         texte(25, (largueur_plateau * taille_case) + 25, lettre[largueur_plateau - 1])
@@ -16,7 +17,7 @@ def dessine_plateau(plateau, taille_case):
                       (largueur_plateau + 1) * taille_case, epaisseur=3, remplissage="blue")
 
     for collonne in range(1, len(plateau[0]) + 1):
-        texte((taille_case * collonne) + 25, 20, collonne)
+        texte((taille_case * collonne) + 25, 20, str(collonne))
 
     mise_a_jour()
 
@@ -46,31 +47,32 @@ def verification_pion_ia(lst_joueur1, lst_robot, plateau):
 
 def recuper_liste_meilleur_case(case_libre, plateau):
     lst_case = []
-    lst_possibiliter=[]
-    print(case_libre)
+    lst_possibiliter = []
     for case in case_libre:
-        lst_prochaine_case_libre=case_alentour(case,plateau)
-        nb_possibiliter=len(verification_deplacement_pion(lst_prochaine_case_libre,plateau))
-        texte((taille_case-1)*case[0]+(taille_case/2),(taille_case-1)*case[1]+(taille_case/2),(nb_possibiliter,case),tag="nb",taille=8,)
+        lst_prochaine_case_libre = case_alentour_adjacent(case, plateau)
+        nb_possibiliter = len(verification_deplacement_pion(lst_prochaine_case_libre, plateau))
+        texte((taille_case - 1) * case[0] + (taille_case / 2), (taille_case - 1) * case[1] + (taille_case / 2),
+              (nb_possibiliter, case), tag="nb", taille=8, )
         lst_possibiliter.append(nb_possibiliter)
     max_possibiliter = max(lst_possibiliter)
-    lst_possibiliter_max=[i for i, element in enumerate(lst_possibiliter) if element == max_possibiliter]
+    lst_possibiliter_max = [i for i, element in enumerate(lst_possibiliter) if element == max_possibiliter]
     for i in lst_possibiliter_max:
         lst_case.append(case_libre[i])
     return lst_case
 
 
-
-
-def deplacement_pion(couleur, joueur_tag, joueur, plateau, ia):
-    case_libre_joueur = case_alentour(joueur, plateau)
+def deplacement_pion(couleur, joueur_tag, joueur, plateau, ia, cavalier):
+    if cavalier:
+        case_libre_joueur = case_alentour_cavalier(joueur, plateau)
+    else:
+        case_libre_joueur = case_alentour_adjacent(joueur, plateau)
 
     case_libre = verification_deplacement_pion(case_libre_joueur, plateau)
     affichage_case_deplacement_possible(case_libre)
     if case_libre == []:
         return False, True
     if ia:
-        case_libre_ia=recuper_liste_meilleur_case(case_libre, plateau)
+        case_libre_ia = recuper_liste_meilleur_case(case_libre, plateau)
         attend_clic_gauche()
         efface("nb")
         position = randint(0, len(case_libre_ia) - 1)
@@ -111,25 +113,37 @@ def affichage_case_deplacement_possible(nv_case_libre_joueur):
     mise_a_jour()
 
 
-def case_alentour(joueur, plateau):
+def case_alentour_adjacent(joueur, plateau):
     case_libre = []
+    pos_x = joueur[0]
+    pos_y = joueur[1]
+    for i in range(pos_x - 1, pos_x + 2):
+        for j in range(pos_y - 1, pos_y + 2):
+            if i < 1 or i > len(plateau[0]) or j < 1 or j > len(plateau) or (i == pos_x and j == pos_y):
+                continue
+            case_libre.append([i, j])
 
-    if joueur[0] > 1:
-        case_libre.append([joueur[0] - 1, joueur[1]])  # case gauche
-    if joueur[0] < len(plateau[0]):
-        case_libre.append([joueur[0] + 1, joueur[1]])  # case droite
-    if joueur[1] > 1:
-        case_libre.append([joueur[0], joueur[1] - 1])  # case au dessus du pion
-    if joueur[1] < len(plateau):
-        case_libre.append([joueur[0], joueur[1] + 1])  # case en dessous du pion
-    if joueur[0] > 1 and joueur[1] > 1:
-        case_libre.append([joueur[0] - 1, joueur[1] - 1])  # case au coin superieur a gauche du pion
-    if joueur[0] < len(plateau[0]) and joueur[1] < len(plateau):
-        case_libre.append([joueur[0] + 1, joueur[1] + 1])  # case au coin superieur a droite du pion
-    if joueur[0] > 1 and joueur[1] < len(plateau):
-        case_libre.append([joueur[0] - 1, joueur[1] + 1])  # case  coin a inferieur gauche du pion
-    if joueur[0] < len(plateau[0]) and joueur[1] > 1:
-        case_libre.append([joueur[0] + 1, joueur[1] - 1])  # case en coin a inferieur droite du pion
+    return case_libre
+
+
+def case_alentour_cavalier(joueur, plateau):
+    case_libre = []
+    pos_x = joueur[0]
+    pos_y = joueur[1]
+    for y in range(-2, 4, 4):
+        for x in range(-1, 2, 2):
+            posit_x = pos_x + x
+            posit_y = pos_y + y
+            if posit_x < 1 or posit_x > 6 or posit_y < 1 or posit_y > 5 or (posit_x == pos_x and posit_y == pos_y):
+                continue
+            case_libre.append([pos_x + x, pos_y + y])
+    for y in range(-1, 2, 2):
+        for x in range(-2, 4, 4):
+            posit_x = pos_x + x
+            posit_y = pos_y + y
+            if posit_x < 1 or posit_x > 6 or posit_y < 1 or posit_y > 5 or (posit_x == pos_x and posit_y == pos_y):
+                continue
+            case_libre.append([pos_x + x, pos_y + y])
     return case_libre
 
 
@@ -145,7 +159,7 @@ def case_noir(plateau, ia, joueur_adverse):
     if ia:
         case_libre_joueur_adverse = case_alentour(joueur_adverse, plateau)
         case_noir_ia = verification_deplacement_pion(case_libre_joueur_adverse, plateau)
-        liste_meilleur_case_noir=recuper_liste_meilleur_case(case_noir_ia, plateau)
+        liste_meilleur_case_noir = recuper_liste_meilleur_case(case_noir_ia, plateau)
         if len(case_noir_ia) > 0:
             case_ia = randint(0, len(liste_meilleur_case_noir) - 1)
             case_noir_x, case_noir_y = liste_meilleur_case_noir[case_ia][0], liste_meilleur_case_noir[case_ia][1]
@@ -161,21 +175,8 @@ def case_noir(plateau, ia, joueur_adverse):
         plateau[(case_noir_y) - 1][(case_noir_x) - 1] = 2
         rectangle(case_noir_x * taille_case, case_noir_y * taille_case, (case_noir_x + 1) * taille_case,
                   (case_noir_y + 1) * taille_case, remplissage="black")
-        texte((taille_case - 1) * case_noir_x + (taille_case / 2), (taille_case - 1) * case_noir_y + (taille_case / 2),
-              (case_noir_x, case_noir_y), tag="nb", taille=8, couleur="white")
         return False
     return True
-
-
-def jouer(tour_deplacement, pose_case_noir, tour, couleur, tag, joueur, plateau, ia, joueur_adverse):
-    # crre 2 fonction
-    while tour_deplacement:
-        tour_deplacement, vainqueur = deplacement_pion(couleur, tag, joueur, plateau, ia)
-    if vainqueur:
-        return not tour_joueur, True
-    while pose_case_noir:
-        pose_case_noir = case_noir(plateau, ia, joueur_adverse)
-    return not tour, False
 
 
 def dimension_plateau(dimension):
@@ -187,9 +188,9 @@ def dimension_plateau(dimension):
     :return: list plateu
     """
     plateau = []
-    for ligne in range(dimension[0]):
+    for _ in range(dimension[0]):
         ligne_plateau = []
-        for collonne in range(dimension[1]):
+        for _ in range(dimension[1]):
             ligne_plateau.append(0)
         plateau.append(ligne_plateau)
     return plateau
@@ -212,7 +213,7 @@ def menu_accueil():
     rectangle(0, 0, 600, 450, remplissage="#133337")
     texte(190, 50, "MODES DE JEU", "blue")
     rectangle(200, 120, 400, 170, 'black', 'medium aquamarine')
-    texte(220, 130," 2 JOUEUR")
+    texte(220, 130, " 2 JOUEUR")
     rectangle(200, 320, 400, 370, 'black', '#E51944')
     texte(280, 330, "IA")
     rectangle(200, 220, 400, 270, 'black', '#E00D0D')
@@ -323,22 +324,57 @@ while main:
         while rejouer:
             # joueur 1
             while tour_joueur:
-                tour_joueur, vainqueur = jouer(tour_deplacement, pose_case_noir, tour_joueur, "yellow", "joueur1",
-                                               joueur1, plateau, False, None)
+                while tour_deplacement:
+                    if mode==3:
+                        tour_deplacement, vainqueur = deplacement_pion("yellow", "joueur1", joueur1, plateau, False,True)
+                    else:
+                        tour_deplacement, vainqueur = deplacement_pion("yellow", "joueur1", joueur1, plateau, False,False)
+                if vainqueur:
+                    tour_joueur = not tour_joueur
+                    continue
+                while pose_case_noir:
+                    pose_case_noir = case_noir(plateau, False, None)
+                tour_joueur = not tour_joueur
+
             rejouer, vainqueur_manche = defaite(vainqueur, "joueur 1")
             # joueur adverse
+            tour_deplacement = True
+            pose_case_noir = True
             if rejouer:
+                #joueur IA
                 if mode == 1:
                     while not tour_joueur:
-                        tour_joueur, vainqueur = jouer(tour_deplacement, pose_case_noir, tour_joueur, "grey", "ia",
-                                                       robot, plateau, True, joueur1)
+                        while tour_deplacement:
+                            tour_deplacement, vainqueur = deplacement_pion("grey", "ia", robot, plateau, True)
+                            print(tour_deplacement)
+                        if vainqueur:
+                            tour_joueur = not tour_joueur
+                            continue
+
+                        while pose_case_noir:
+                            pose_case_noir = case_noir(plateau, False, joueur1)
+                        tour_joueur = not tour_joueur
+
                     rejouer, vainqueur_manche = defaite(vainqueur, "ia")
                 else:
                     rejouer, vainqueur_manche = defaite(vainqueur, "joueur 1")
-
+                #JOUEUR 2
                 while not tour_joueur:
-                    tour_joueur, vainqueur = jouer(tour_deplacement, pose_case_noir, tour_joueur, "red", "joueur2",
-                                                   joueur2, plateau, False, None)
+                    while tour_deplacement:
+                        if mode == 3:
+                            tour_deplacement, vainqueur = deplacement_pion("red", "joueur2", joueur2, plateau, False,
+                                                                           True)
+                        else:
+                            tour_deplacement, vainqueur = deplacement_pion("red", "joueur2", joueur2, plateau, False,
+                                                                           False)
+                    if vainqueur:
+                        tour_joueur = not tour_joueur
+                        continue
+                    while pose_case_noir:
+                        pose_case_noir = case_noir(plateau, False, None)
+                    tour_joueur = not tour_joueur
                 rejouer, vainqueur_manche = defaite(vainqueur, "joueur 2")
+                tour_deplacement = True
+                pose_case_noir = True
         mode = menu_rejouer(vainqueur_manche, mode)
     ferme_fenetre()
