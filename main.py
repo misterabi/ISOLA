@@ -51,8 +51,6 @@ def recuper_liste_meilleur_case(case_libre, plateau):
     for case in case_libre:
         lst_prochaine_case_libre = case_alentour_adjacent(case, plateau)
         nb_possibiliter = len(verification_deplacement_pion(lst_prochaine_case_libre, plateau))
-        texte((taille_case - 1) * case[0] + (taille_case / 2), (taille_case - 1) * case[1] + (taille_case / 2),
-              (nb_possibiliter, case), tag="nb", taille=8, )
         lst_possibiliter.append(nb_possibiliter)
     max_possibiliter = max(lst_possibiliter)
     lst_possibiliter_max = [i for i, element in enumerate(lst_possibiliter) if element == max_possibiliter]
@@ -73,8 +71,6 @@ def deplacement_pion(couleur, joueur_tag, joueur, plateau, ia, cavalier):
         return False, True
     if ia:
         case_libre_ia = recuper_liste_meilleur_case(case_libre, plateau)
-        attend_clic_gauche()
-        efface("nb")
         position = randint(0, len(case_libre_ia) - 1)
         nv_x, nv_y = case_libre_ia[position][0], case_libre_ia[position][1]
         nv_deplacement = [[nv_x, nv_y]]
@@ -157,7 +153,7 @@ def verifiacation_deplacement(nv_deplacement, joueur_adverse, plateau, joueur):
 
 def case_noir(plateau, ia, joueur_adverse):
     if ia:
-        case_libre_joueur_adverse = case_alentour(joueur_adverse, plateau)
+        case_libre_joueur_adverse = case_alentour_adjacent(joueur_adverse, plateau)
         case_noir_ia = verification_deplacement_pion(case_libre_joueur_adverse, plateau)
         liste_meilleur_case_noir = recuper_liste_meilleur_case(case_noir_ia, plateau)
         if len(case_noir_ia) > 0:
@@ -345,14 +341,13 @@ while main:
                 if mode == 1:
                     while not tour_joueur:
                         while tour_deplacement:
-                            tour_deplacement, vainqueur = deplacement_pion("grey", "ia", robot, plateau, True)
-                            print(tour_deplacement)
+                            tour_deplacement, vainqueur = deplacement_pion("grey", "ia", robot, plateau, True,False)
                         if vainqueur:
                             tour_joueur = not tour_joueur
                             continue
 
                         while pose_case_noir:
-                            pose_case_noir = case_noir(plateau, False, joueur1)
+                            pose_case_noir = case_noir(plateau, True, joueur1)
                         tour_joueur = not tour_joueur
 
                     rejouer, vainqueur_manche = defaite(vainqueur, "ia")
