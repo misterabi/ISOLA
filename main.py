@@ -1,6 +1,8 @@
 from upemtk import *
 from random import randint
-
+"""
+beug cavalier
+"""
 
 def dessine_plateau(plateau, taille_case):
     lettre = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U",
@@ -56,12 +58,13 @@ def recuper_liste_meilleur_case(case_libre, plateau):
     lst_possibiliter_max = [i for i, element in enumerate(lst_possibiliter) if element == max_possibiliter]
     for i in lst_possibiliter_max:
         lst_case.append(case_libre[i])
+
     return lst_case
 
 
 def deplacement_pion(couleur, joueur_tag, joueur, plateau, ia, cavalier):
     if cavalier:
-        case_libre_joueur = case_alentour_cavalier(joueur, plateau)
+        case_libre_joueur = case_alentour_cavalier(joueur)
     else:
         case_libre_joueur = case_alentour_adjacent(joueur, plateau)
 
@@ -122,7 +125,7 @@ def case_alentour_adjacent(joueur, plateau):
     return case_libre
 
 
-def case_alentour_cavalier(joueur, plateau):
+def case_alentour_cavalier(joueur):
     case_libre = []
     pos_x = joueur[0]
     pos_y = joueur[1]
@@ -130,14 +133,14 @@ def case_alentour_cavalier(joueur, plateau):
         for x in range(-1, 2, 2):
             posit_x = pos_x + x
             posit_y = pos_y + y
-            if posit_x < 1 or posit_x > 6 or posit_y < 1 or posit_y > 5 or (posit_x == pos_x and posit_y == pos_y):
+            if posit_x < 1 or posit_x > 6 or posit_y < 1 or posit_y > 6 or (posit_x == pos_x and posit_y == pos_y):
                 continue
             case_libre.append([pos_x + x, pos_y + y])
     for y in range(-1, 2, 2):
         for x in range(-2, 4, 4):
             posit_x = pos_x + x
             posit_y = pos_y + y
-            if posit_x < 1 or posit_x > 6 or posit_y < 1 or posit_y > 5 or (posit_x == pos_x and posit_y == pos_y):
+            if posit_x < 1 or posit_x > 6 or posit_y < 1 or posit_y > 6 or (posit_x == pos_x and posit_y == pos_y):
                 continue
             case_libre.append([pos_x + x, pos_y + y])
     return case_libre
